@@ -85,6 +85,7 @@ abstract class HttpTestCase extends ApplicationTestCase
      * @param array<string, mixed> $headers
      *
      * @return TestResponse
+     * @throws \ReflectionException
      */
     protected function request(string $method, string $uri, array $body = [], array $headers = []): TestResponse
     {

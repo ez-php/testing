@@ -30,7 +30,7 @@ use EzPhp\Orm\Model;
  *
  * @package EzPhp\Testing
  */
-final class ModelFactory
+final readonly class ModelFactory
 {
     /**
      * ModelFactory Constructor
@@ -39,8 +39,8 @@ final class ModelFactory
      * @param array<string, mixed>               $defaults   Default attribute values; scalar or callable.
      */
     public function __construct(
-        private readonly string $modelClass,
-        private readonly array $defaults = [],
+        private string $modelClass,
+        private array $defaults = [],
     ) {
     }
 

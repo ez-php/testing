@@ -30,6 +30,7 @@ abstract class DatabaseTestCase extends ApplicationTestCase
 
     /**
      * @return void
+     * @throws \ReflectionException
      */
     protected function setUp(): void
     {

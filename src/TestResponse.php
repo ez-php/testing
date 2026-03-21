@@ -16,14 +16,14 @@ use PHPUnit\Framework\Assert;
  *
  * @package EzPhp\Testing
  */
-final class TestResponse
+final readonly class TestResponse
 {
     /**
      * TestResponse Constructor
      *
      * @param Response $response
      */
-    public function __construct(private readonly Response $response)
+    public function __construct(private Response $response)
     {
     }
 
