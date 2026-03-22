@@ -1,12 +1,14 @@
 # ez-php/testing
 
-Test utilities for the [ez-php framework](https://github.com/ez-php) — base test cases, HTTP request helpers, response assertions, and a model factory.
+Framework-independent test utilities for [ez-php](https://github.com/ez-php) — response assertions and a model factory.
+
+> **Looking for `ApplicationTestCase`, `DatabaseTestCase`, or `HttpTestCase`?**
+> Those live in [`ez-php/testing-application`](https://github.com/ez-php/testing-application), which boots the full framework stack.
 
 ## Requirements
 
 - PHP 8.5+
 - PHPUnit 13+
-- ez-php/framework
 - ez-php/http
 - ez-php/orm
 
@@ -18,81 +20,9 @@ composer require --dev ez-php/testing
 
 ## Classes
 
-### `ApplicationTestCase`
-
-Bootstraps the Application for each test. Override `getBasePath()` to point to your application root and `configureApplication()` to register providers or middleware before bootstrap.
-
-```php
-use EzPhp\Testing\ApplicationTestCase;
-
-final class MyTest extends ApplicationTestCase
-{
-    protected function getBasePath(): string
-    {
-        return dirname(__DIR__);
-    }
-
-    protected function configureApplication(Application $app): void
-    {
-        $app->register(MyTestProvider::class);
-    }
-
-    public function testSomething(): void
-    {
-        $router = $this->app()->make(Router::class);
-        // …
-    }
-}
-```
-
-### `DatabaseTestCase`
-
-Extends `ApplicationTestCase`. Wraps each test in a database transaction that is rolled back on teardown — no table truncation required.
-
-```php
-use EzPhp\Testing\DatabaseTestCase;
-
-final class UserRepositoryTest extends DatabaseTestCase
-{
-    protected function getBasePath(): string
-    {
-        return dirname(__DIR__);
-    }
-
-    public function testUserIsSaved(): void
-    {
-        // writes during this test are rolled back after tearDown
-        User::create(['name' => 'Alice', 'email' => 'alice@example.com']);
-
-        $this->assertCount(1, User::all());
-    }
-}
-```
-
-### `HttpTestCase`
-
-Extends `ApplicationTestCase`. Provides `get()`, `post()`, `put()`, `delete()`, and `request()` helpers that dispatch fake HTTP requests through the full application stack (middleware, router, handlers) and return a `TestResponse`.
-
-```php
-use EzPhp\Testing\HttpTestCase;
-
-final class HomeControllerTest extends HttpTestCase
-{
-    protected function getBasePath(): string
-    {
-        return dirname(__DIR__);
-    }
-
-    public function testHomePage(): void
-    {
-        $this->get('/')->assertOk()->assertSee('Welcome');
-    }
-}
-```
-
 ### `TestResponse`
 
-Returned by `HttpTestCase` helpers. Fluent assertion API:
+Wraps a `Response` with a fluent PHPUnit assertion API. Returned by `HttpTestCase` helpers in `ez-php/testing-application`.
 
 | Method | Description |
 |---|---|

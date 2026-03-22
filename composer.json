@@ -19,8 +19,6 @@
   "require": {
     "php": "^8.5",
     "phpunit/phpunit": "^13.0",
-    "ez-php/contracts": "0.*",
-    "ez-php/framework": "0.*",
     "ez-php/http": "0.*",
     "ez-php/orm": "0.*"
   },

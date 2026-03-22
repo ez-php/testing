@@ -156,9 +156,11 @@ When adding a new module, add `"$ROOT/modules/<name>"` to the `PACKAGES` array i
 
 # Package: ez-php/testing
 
-Test utilities for ez-php applications — `ApplicationTestCase`, `DatabaseTestCase`, `HttpTestCase`, `TestResponse`, and `ModelFactory`.
+Framework-independent test utilities for ez-php — `TestResponse` and `ModelFactory`.
 
-This module is a **dev-time dependency**. Users add it to `require-dev` in their application. The module itself lists `ez-php/framework`, `ez-php/orm`, `ez-php/http`, and `phpunit/phpunit` in `require` (not `require-dev`) because its source classes extend and depend on those types at runtime (from the test runner's perspective).
+This module is a **dev-time dependency**. Users add it to `require-dev` in their application or module. It has **no dependency on `ez-php/framework`** — it can be used by standalone modules (ORM, validation, cache, …) without pulling in the full framework stack.
+
+The framework-coupled base classes (`ApplicationTestCase`, `DatabaseTestCase`, `HttpTestCase`) live in the companion package `ez-php/testing-application`, which does depend on `ez-php/framework`.
 
 ---
 
@@ -166,69 +168,18 @@ This module is a **dev-time dependency**. Users add it to `require-dev` in their
 
 ```
 src/
-├── ApplicationTestCase.php   — Abstract PHPUnit base; bootstraps a fresh Application per test
-├── DatabaseTestCase.php      — Extends ApplicationTestCase; wraps each test in a DB transaction, rolls back on teardown
-├── HttpTestCase.php          — Extends ApplicationTestCase; get/post/put/delete helpers that dispatch through the full stack
-├── TestResponse.php          — Wraps Response with fluent PHPUnit assertion helpers
-└── ModelFactory.php          — Builds and optionally persists Model instances with default and override attributes
+├── TestResponse.php   — Wraps Response with fluent PHPUnit assertion helpers
+└── ModelFactory.php   — Builds and optionally persists Model instances with default and override attributes
 
 tests/
-├── TestCase.php                    — Minimal PHPUnit base
-├── ApplicationTestCaseTest.php     — Tests bootstrap, app() accessor, configureApplication() hook
-├── DatabaseTestCaseTest.php        — Tests transaction start and PDO accessibility (SQLite :memory:)
-├── HttpTestCaseTest.php            — Tests request helpers and 404 dispatch; uses an inline TestRouteProvider
-├── ModelFactoryTest.php            — Tests make/create/makeMany/createMany, callable defaults, overrides
-└── TestResponseTest.php            — Tests all assertion methods — passing and failing cases
+├── TestCase.php             — Minimal PHPUnit base
+├── ModelFactoryTest.php     — Tests make/create/makeMany/createMany, callable defaults, overrides
+└── TestResponseTest.php     — Tests all assertion methods — passing and failing cases
 ```
 
 ---
 
 ## Key Classes and Responsibilities
-
-### ApplicationTestCase (`src/ApplicationTestCase.php`)
-
-Abstract PHPUnit base class. Creates a new `Application` per test, calls `configureApplication()`, then calls `bootstrap()`.
-
-| Method | Behaviour |
-|---|---|
-| `setUp()` | Creates Application, calls configureApplication(), calls bootstrap() |
-| `getBasePath(): string` | Override to return your app root; default creates a temp dir with empty `config/` |
-| `configureApplication(Application)` | Hook: override to register providers, middleware, or routes before bootstrap |
-| `app(): Application` | Returns the bootstrapped Application instance |
-
-**Default basePath** creates a temporary directory with an empty `config/` subdirectory. This satisfies `ConfigLoader` (which throws if the directory is missing) while keeping bindings lazy — the Database, ORM, etc. are never resolved unless a test explicitly calls `make()`.
-
----
-
-### DatabaseTestCase (`src/DatabaseTestCase.php`)
-
-Extends `ApplicationTestCase`. Resolves `DatabaseInterface` from the container after bootstrap, begins a PDO transaction, and rolls it back unconditionally in `tearDown()`.
-
-| Method | Behaviour |
-|---|---|
-| `setUp()` | parent::setUp() + resolves DatabaseInterface + beginTransaction() |
-| `tearDown()` | rollBack() if inTransaction() + parent::tearDown() |
-| `pdo(): PDO` | Returns the raw PDO connection for direct use in tests |
-
-**Requires a configured database.** Override `getBasePath()` to point to an application with a working `config/db.php`. For in-process tests without MySQL, configure `driver=sqlite, database=:memory:`.
-
----
-
-### HttpTestCase (`src/HttpTestCase.php`)
-
-Extends `ApplicationTestCase`. All HTTP helpers construct a `Request` value object and call `$app->handle()` — no HTTP server is involved. The full middleware pipeline, router, and exception handler all run.
-
-| Method | Behaviour |
-|---|---|
-| `get(uri, headers)` | GET request; returns TestResponse |
-| `post(uri, body, headers)` | POST request with body array |
-| `put(uri, body, headers)` | PUT request with body array |
-| `delete(uri, headers)` | DELETE request |
-| `request(method, uri, body, headers)` | Generic method; normalises header names to lowercase |
-
-**Header normalisation** — header names are lowercased before being passed to the `Request` constructor, matching `RequestFactory::createFromGlobals()` behaviour.
-
----
 
 ### TestResponse (`src/TestResponse.php`)
 
@@ -263,23 +214,17 @@ Generic factory. `@template TModel of Model`. Default attribute values may be sc
 
 ## Design Decisions and Constraints
 
-- **PHPUnit in `require` (not `require-dev`)** — `ApplicationTestCase` extends `PHPUnit\Framework\TestCase`. Since this is a package whose sole purpose is to be used in test suites, PHPUnit is a first-class runtime dependency (from the test runner's perspective, this package IS production code that users consume).
-- **`getBasePath()` creates a temp dir by default** — This avoids a hard requirement on a working app structure for simple tests. The config/ stub satisfies `ConfigLoader` (which throws if the directory is missing), while all service bindings remain lazy. Tests that need real configuration (DB, routes, etc.) must override `getBasePath()`.
-- **`DatabaseTestCase` uses transaction rollback, not database swap** — Wrapping tests in a transaction and rolling back is faster than truncating tables and avoids needing a separate test database. The trade-off is that the PDO connection must be shared (which it is, because `DatabaseInterface` is a container singleton).
-- **`DatabaseTestCase` does not swap DB_DATABASE** — Unlike the framework's own `DatabaseTestCase` (which changes the env var), this module's implementation relies on the transaction rollback to provide isolation. If users want env-based swapping, they can add it in `configureApplication()` or `getBasePath()`.
-- **`HttpTestCase` does not emit HTTP headers** — `ResponseEmitter` is never called. The `Response` is returned directly from `Application::handle()`. This is intentional: header sending only works in an actual HTTP context, not CLI/PHPUnit.
+- **PHPUnit in `require` (not `require-dev`)** — `TestResponse` uses `PHPUnit\Framework\Assert`. Since this package is consumed exclusively in test suites, PHPUnit is a first-class runtime dependency (from the test runner's perspective, this package IS production code that users consume).
+- **No `ez-php/framework` dependency** — This package must remain usable by standalone modules (ORM, validation, cache, …) without pulling in the full Application stack. The framework-coupled base classes live in `ez-php/testing-application`.
 - **`ModelFactory` defaults are `array<string, mixed>`** — Callable detection uses `is_callable()`. This avoids a separate `Closure` type union while still supporting any callable (closure, invokable, etc.).
-- **No services resolved in `configureApplication()`** — The hook is called before `bootstrap()`. The Application is not yet booted. Only `register()` and `middleware()` calls on the Application are safe here. Route registration must happen inside a service provider's `boot()` method.
 
 ---
 
 ## Testing Approach
 
-- **No external infrastructure required** — All module tests run in-process using SQLite `:memory:`. No MySQL or Redis service needed.
-- **`DatabaseTestCaseTest` uses SQLite** — It overrides `getBasePath()` to create a temp dir with `config/db.php` returning `['driver' => 'sqlite', 'database' => ':memory:']`. PHPUnit's `pdo_sqlite` extension must be available.
-- **`HttpTestCaseTest` registers routes via `HttpTestRouteProvider`** — A `ServiceProvider` defined in the test file registers routes in `boot()`. This tests that `configureApplication()` runs before bootstrap and that routes registered by user providers are honoured.
+- **No external infrastructure required** — All module tests run in-process. No MySQL, Redis, or Application bootstrap needed.
 - **`ModelFactoryTest` uses a `PdoTestDatabase` helper** — Mirrors the `PdoDatabase` helper in `ez-php/orm` tests. Avoids depending on `ez-php/framework`'s `Database` class from the test infrastructure.
-- **`#[CoversClass]` required** — `beStrictAboutCoverageMetadata=true` is set in phpunit.xml. Only the testing module's own `src/` classes are tracked for coverage; framework classes are excluded from the source paths.
+- **`#[CoversClass]` required** — Only this module's own `src/` classes are tracked for coverage.
 
 ---
 
@@ -287,6 +232,7 @@ Generic factory. `@template TModel of Model`. Default attribute values may be sc
 
 | Concern | Where it belongs |
 |---|---|
+| `ApplicationTestCase`, `DatabaseTestCase`, `HttpTestCase` | `ez-php/testing-application` |
 | Fixture data for a specific application | Application's own test directory |
 | Database seeders | Application layer |
 | Mocking framework or test doubles | PHPUnit's built-in mocking, or application test directory |
