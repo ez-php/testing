@@ -146,11 +146,17 @@ After scaffolding:
 
 Only set a port for services the module actually uses. Modules without external services need no port config.
 
+### 4 — Monorepo scripts
+
+`packages.sh` at the project root is the **central package registry**. Both `push_all.sh` and `update_all.sh` source it — the package list lives in exactly one place.
+
+When adding a new module, add `"$ROOT/modules/<name>"` to the `PACKAGES` array in `packages.sh` in **alphabetical order** among the other `modules/*` entries (before `framework`, `ez-php`, and the root entry at the end).
+
 ---
 
 # Package: ez-php/testing
 
-Test utilities for the ez-php framework — base test cases for Application, HTTP, and database tests, plus a fluent Model factory.
+Test utilities for ez-php applications — `ApplicationTestCase`, `DatabaseTestCase`, `HttpTestCase`, `TestResponse`, and `ModelFactory`.
 
 This module is a **dev-time dependency**. Users add it to `require-dev` in their application. The module itself lists `ez-php/framework`, `ez-php/orm`, `ez-php/http`, and `phpunit/phpunit` in `require` (not `require-dev`) because its source classes extend and depend on those types at runtime (from the test runner's perspective).
 
