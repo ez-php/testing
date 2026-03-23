@@ -156,7 +156,7 @@ When adding a new module, add `"$ROOT/modules/<name>"` to the `PACKAGES` array i
 
 # Package: ez-php/testing
 
-Framework-independent test utilities for ez-php — `TestResponse` and `ModelFactory`.
+Framework-independent test utilities for ez-php — `TestResponse` and `EntityFactory`.
 
 This module is a **dev-time dependency**. Users add it to `require-dev` in their application or module. It has **no dependency on `ez-php/framework`** — it can be used by standalone modules (ORM, validation, cache, …) without pulling in the full framework stack.
 
@@ -169,12 +169,12 @@ The framework-coupled base classes (`ApplicationTestCase`, `DatabaseTestCase`, `
 ```
 src/
 ├── TestResponse.php   — Wraps Response with fluent PHPUnit assertion helpers
-└── ModelFactory.php   — Builds and optionally persists Model instances with default and override attributes
+└── EntityFactory.php  — Builds and optionally persists Entity instances with default and override attributes
 
 tests/
-├── TestCase.php             — Minimal PHPUnit base
-├── ModelFactoryTest.php     — Tests make/create/makeMany/createMany, callable defaults, overrides
-└── TestResponseTest.php     — Tests all assertion methods — passing and failing cases
+├── TestCase.php              — Minimal PHPUnit base
+├── EntityFactoryTest.php     — Tests make/create/makeMany/createMany, callable defaults, overrides
+└── TestResponseTest.php      — Tests all assertion methods — passing and failing cases
 ```
 
 ---
@@ -197,18 +197,18 @@ Final wrapper around `Response`. All assertion methods delegate to `PHPUnit\Fram
 
 ---
 
-### ModelFactory (`src/ModelFactory.php`)
+### EntityFactory (`src/EntityFactory.php`)
 
-Generic factory. `@template TModel of Model`. Default attribute values may be scalar or callable; callables are invoked once per instance.
+Generic factory. `@template T of Entity`. Default attribute values may be scalar or callable; callables are invoked once per instance. Persistence is delegated to an injected `AbstractRepository`.
 
 | Method | Behaviour |
 |---|---|
-| `make(overrides)` | Creates model instance without persisting |
-| `create(overrides)` | Creates and calls `save()` on the model |
-| `makeMany(count, overrides)` | Returns `list<TModel>` without persisting |
-| `createMany(count, overrides)` | Returns `list<TModel>`, each persisted |
+| `make(overrides)` | Creates entity instance without persisting |
+| `create(overrides)` | Creates and calls `$repo->save()` on the entity |
+| `makeMany(count, overrides)` | Returns `list<T>` without persisting |
+| `createMany(count, overrides)` | Returns `list<T>`, each persisted via the repository |
 
-**Requires a database** on the model class before `create()` is called. `make()` does not need a database.
+**Requires a repository** before `create()` or `createMany()` is called. `make()` and `makeMany()` do not need a database connection.
 
 ---
 
@@ -216,14 +216,14 @@ Generic factory. `@template TModel of Model`. Default attribute values may be sc
 
 - **PHPUnit in `require` (not `require-dev`)** — `TestResponse` uses `PHPUnit\Framework\Assert`. Since this package is consumed exclusively in test suites, PHPUnit is a first-class runtime dependency (from the test runner's perspective, this package IS production code that users consume).
 - **No `ez-php/framework` dependency** — This package must remain usable by standalone modules (ORM, validation, cache, …) without pulling in the full Application stack. The framework-coupled base classes live in `ez-php/testing-application`.
-- **`ModelFactory` defaults are `array<string, mixed>`** — Callable detection uses `is_callable()`. This avoids a separate `Closure` type union while still supporting any callable (closure, invokable, etc.).
+- **`EntityFactory` defaults are `array<string, mixed>`** — Callable detection uses `is_callable()`. This avoids a separate `Closure` type union while still supporting any callable (closure, invokable, etc.).
 
 ---
 
 ## Testing Approach
 
 - **No external infrastructure required** — All module tests run in-process. No MySQL, Redis, or Application bootstrap needed.
-- **`ModelFactoryTest` uses a `PdoTestDatabase` helper** — Mirrors the `PdoDatabase` helper in `ez-php/orm` tests. Avoids depending on `ez-php/framework`'s `Database` class from the test infrastructure.
+- **`EntityFactoryTest` uses a `PdoTestDatabase` helper** — Mirrors the `PdoDatabase` helper in `ez-php/orm` tests. Avoids depending on `ez-php/framework`'s `Database` class from the test infrastructure.
 - **`#[CoversClass]` required** — Only this module's own `src/` classes are tracked for coverage.
 
 ---

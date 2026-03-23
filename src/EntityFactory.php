@@ -25,8 +25,8 @@ use EzPhp\Orm\Entity;
  *   $user  = $factory->create();                  // persisted via repository->save()
  *   $users = $factory->createMany(5, ['role' => 'admin']);
  *
- * Unlike ModelFactory, persistence requires an AbstractRepository because
- * Entity instances have no database awareness.
+ * Persistence requires an AbstractRepository because Entity instances have
+ * no database awareness — the repository handles all INSERT/UPDATE operations.
  *
  * @template T of Entity
  *
