@@ -2,6 +2,12 @@
 
 All notable changes to `ez-php/testing` are documented here.
 
+## [v0.9.2] — 2026-03-23
+
+### Documentation
+- Update CHANGELOG for v0.9.1 [skip ci] (154689d)
+
+
 ## [v0.9.1] — 2026-03-23
 
 ### Documentation
