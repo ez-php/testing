@@ -6,6 +6,7 @@ All notable changes to `ez-php/testing` are documented here.
 
 ### Documentation
 - Update CHANGELOG for v0.9.3 [skip ci] (d699a2f)
+- Update CHANGELOG for v1.0.0 [skip ci] (f17ac30)
 
 
 ## [v0.9.3] — 2026-03-24
