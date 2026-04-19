@@ -1,6 +1,6 @@
 {
   "name": "ez-php/testing",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Test utilities for the ez-php framework — ApplicationTestCase, DatabaseTestCase, HttpTestCase, ModelFactory",
   "type": "library",
   "license": "MIT",
