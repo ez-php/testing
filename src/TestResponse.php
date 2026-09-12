@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EzPhp\Testing;
 
-use EzPhp\Http\Response;
+use EzPhp\Http\ResponseInterface;
 use PHPUnit\Framework\Assert;
 
 /**
@@ -18,13 +18,25 @@ use PHPUnit\Framework\Assert;
  */
 final readonly class TestResponse
 {
+    private string $body;
+
     /**
      * TestResponse Constructor
      *
-     * @param Response $response
+     * The body is captured once, here, through writeBody() — so assertions work
+     * the same for string and streamed responses. An exception thrown by a
+     * stream propagates out of the constructor.
+     *
+     * @param ResponseInterface $response
      */
-    public function __construct(private Response $response)
+    public function __construct(private ResponseInterface $response)
     {
+        $body = '';
+        $response->writeBody(function (string $chunk) use (&$body): void {
+            $body .= $chunk;
+        });
+
+        $this->body = $body;
     }
 
     /**
@@ -44,7 +56,7 @@ final readonly class TestResponse
      */
     public function body(): string
     {
-        return $this->response->body();
+        return $this->body;
     }
 
     /**
@@ -131,7 +143,7 @@ final readonly class TestResponse
     {
         Assert::assertStringContainsString(
             $text,
-            $this->response->body(),
+            $this->body,
             sprintf('Failed asserting that response body contains "%s".', $text),
         );
 
@@ -149,7 +161,7 @@ final readonly class TestResponse
      */
     public function assertJson(array $expected): static
     {
-        $decoded = json_decode($this->response->body(), true);
+        $decoded = json_decode($this->body, true);
 
         Assert::assertIsArray($decoded, 'Response body is not valid JSON.');
         Assert::assertSame($expected, $decoded);

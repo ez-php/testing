@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use EzPhp\Http\Response;
+use EzPhp\Http\StreamedResponse;
 use EzPhp\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -224,5 +225,18 @@ final class TestResponseTest extends TestCase
             ->assertOk()
             ->assertSee('"ok"')
             ->assertHeader('Content-Type', 'application/json');
+    }
+
+    // ─── streamed responses ───────────────────────────────────────────────────
+
+    public function testStreamedResponseBodyIsCapturedForAssertions(): void
+    {
+        $response = new TestResponse(new StreamedResponse(function (): \Generator {
+            yield '{"a":';
+            yield '1}';
+        }));
+
+        $this->assertSame('{"a":1}', $response->body());
+        $response->assertSee('"a"');
     }
 }
