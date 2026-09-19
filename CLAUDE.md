@@ -309,6 +309,8 @@ Generic factory. `@template T of Entity`. Default attribute values may be scalar
 - **`EntityFactory` defaults are `array<string, mixed>`** — Callable detection uses `is_callable()`. This avoids a separate `Closure` type union while still supporting any callable (closure, invokable, etc.).
 
 ---
+- **The PSR-4 namespace `EzPhp\Testing\` is shared with `ez-php/testing-application`.** `ez-php/testing` and `ez-php/testing-application` were split from one package and deliberately keep the same root namespace so existing `use EzPhp\Testing\...` imports keep working; classes never collide because each class lives in exactly one of the two packages.
+
 
 ## Testing Approach
 
