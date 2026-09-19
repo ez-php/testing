@@ -246,7 +246,7 @@ When adding a new module, add `"$ROOT/modules/<name>"` to the `PACKAGES` array i
 
 # Package: ez-php/testing
 
-Framework-independent test utilities for ez-php — `TestResponse` and `EntityFactory`.
+Framework-independent test utilities for ez-php — `TestResponse`, `EntityFactory` and recording fakes (`FakeQueue`, `FakeMailer`, `FakeChannel`, `EventSpy`, `FakeStorage`).
 
 This module is a **dev-time dependency**. Users add it to `require-dev` in their application or module. It has **no dependency on `ez-php/framework`** — it can be used by standalone modules (ORM, validation, cache, …) without pulling in the full framework stack.
 
@@ -259,12 +259,19 @@ The framework-coupled base classes (`ApplicationTestCase`, `DatabaseTestCase`, `
 ```
 src/
 ├── TestResponse.php   — Wraps Response with fluent PHPUnit assertion helpers
-└── EntityFactory.php  — Builds and optionally persists Entity instances with default and override attributes
+├── EntityFactory.php  — Builds and optionally persists Entity instances with default and override attributes
+└── Fake/
+    ├── FakeQueue.php   — QueueInterface (ez-php/contracts): records pushes, FIFO pop; assertPushed/assertPushedTimes/assertNotPushed/assertNothingPushed
+    ├── FakeMailer.php  — MailerInterface (ez-php/mail, soft): records send(); assertSent/assertNotSent/assertSentCount/assertNothingSent
+    ├── FakeChannel.php — notification ChannelInterface (ez-php/notification, soft): assertSentTo/assertSentCount/assertNothingSent
+    ├── EventSpy.php    — spy attached to a real EventDispatcher (ez-php/events, soft): assertDispatched/assertDispatchedTimes/assertNotDispatched/assertNothingDispatched
+    └── FakeStorage.php — StorageInterface over ez-php/storage's InMemoryDriver (soft): assertExists/assertMissing/assertContents/assertEmpty
 
 tests/
 ├── TestCase.php              — Minimal PHPUnit base
 ├── EntityFactoryTest.php     — Tests make/create/makeMany/createMany, callable defaults, overrides
-└── TestResponseTest.php      — Tests all assertion methods — passing and failing cases
+├── TestResponseTest.php      — Tests all assertion methods — passing and failing cases
+└── Fake/                     — one test per fake: recording, filtering, and every assertion passing *and* failing
 ```
 
 ---
@@ -308,9 +315,13 @@ Generic factory. `@template T of Entity`. Default attribute values may be scalar
 - **No `ez-php/framework` dependency** — This package must remain usable by standalone modules (ORM, validation, cache, …) without pulling in the full Application stack. The framework-coupled base classes live in `ez-php/testing-application`.
 - **`EntityFactory` defaults are `array<string, mixed>`** — Callable detection uses `is_callable()`. This avoids a separate `Closure` type union while still supporting any callable (closure, invokable, etc.).
 
----
 - **The PSR-4 namespace `EzPhp\Testing\` is shared with `ez-php/testing-application`.** `ez-php/testing` and `ez-php/testing-application` were split from one package and deliberately keep the same root namespace so existing `use EzPhp\Testing\...` imports keep working; classes never collide because each class lives in exactly one of the two packages.
+- **The fakes are recording doubles for ez-php's own seams, and their packages are soft dependencies.** `FakeQueue` needs only `ez-php/contracts`; `FakeMailer`, `FakeChannel`, `EventSpy` and `FakeStorage` reference `ez-php/mail`, `ez-php/notification`, `ez-php/events` and `ez-php/storage`, which are `require-dev` + `suggest` — PSR-4 loads a fake only when a test uses it, so this package stays framework-independent and does not drag every module into every project.
+- **`EventDispatcher` is `final` and has no interface, so there is no `FakeEventBus`.** `EventSpy::attachTo($dispatcher)` registers a highest-priority wildcard listener instead: the real listeners still run, and the spy still sees an event a later listener stops. Anonymous-class events are not matched by wildcard listeners (a limitation of `EventDispatcher`), so use named event classes in tests.
+- **`FakeStorage` reuses `ez-php/storage`'s `InMemoryDriver`** (it is a thin decorator adding assertions) instead of reimplementing an in-memory store.
+- **Assertions use `PHPUnit\Framework\Assert`** and take an optional `Closure` filter, so failures show up as ordinary PHPUnit assertion failures with a message naming the missing/unexpected class.
 
+---
 
 ## Testing Approach
 
@@ -327,7 +338,7 @@ Generic factory. `@template T of Entity`. Default attribute values may be scalar
 | `ApplicationTestCase`, `DatabaseTestCase`, `HttpTestCase` | `ez-php/testing-application` |
 | Fixture data for a specific application | Application's own test directory |
 | Database seeders | Application layer |
-| Mocking framework or test doubles | PHPUnit's built-in mocking, or application test directory |
+| General-purpose mocking | PHPUnit's built-in mocking. Only *recording fakes for ez-php's own seams* (queue, mail, notification channel, events, storage) live here |
 | Request / Response value objects | `ez-php/http` |
 | Application lifecycle / bootstrap | `ez-php/framework` |
 | ORM / Model logic | `ez-php/orm` |
