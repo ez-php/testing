@@ -2633,16 +2633,16 @@
         },
         {
             "name": "ez-php/broadcast",
-            "version": "2.5.9",
+            "version": "2.5.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ez-php/broadcast.git",
-                "reference": "2f1a2cad5743ecb0cb7b80f14c254a7c0233a72b"
+                "reference": "d9fdc9f031f19715e47c8e0fe1c981594cb2b65b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ez-php/broadcast/zipball/2f1a2cad5743ecb0cb7b80f14c254a7c0233a72b",
-                "reference": "2f1a2cad5743ecb0cb7b80f14c254a7c0233a72b",
+                "url": "https://api.github.com/repos/ez-php/broadcast/zipball/d9fdc9f031f19715e47c8e0fe1c981594cb2b65b",
+                "reference": "d9fdc9f031f19715e47c8e0fe1c981594cb2b65b",
                 "shasum": ""
             },
             "require": {
@@ -2693,7 +2693,7 @@
                 "issues": "https://github.com/ez-php/broadcast/issues",
                 "source": "https://github.com/ez-php/broadcast"
             },
-            "time": "2026-10-20T21:07:28+00:00"
+            "time": "2026-10-23T12:36:17+00:00"
         },
         {
             "name": "ez-php/docker",
@@ -2920,16 +2920,16 @@
         },
         {
             "name": "ez-php/notification",
-            "version": "2.5.9",
+            "version": "2.5.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ez-php/notification.git",
-                "reference": "1e449dcd067ce054ace48d8195170a1b08634618"
+                "reference": "fd15d3ffcbf3c011b02f28e8f97f10719eab7b69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ez-php/notification/zipball/1e449dcd067ce054ace48d8195170a1b08634618",
-                "reference": "1e449dcd067ce054ace48d8195170a1b08634618",
+                "url": "https://api.github.com/repos/ez-php/notification/zipball/fd15d3ffcbf3c011b02f28e8f97f10719eab7b69",
+                "reference": "fd15d3ffcbf3c011b02f28e8f97f10719eab7b69",
                 "shasum": ""
             },
             "require": {
@@ -2943,6 +2943,7 @@
             "require-dev": {
                 "ez-php/docker": "^2.0",
                 "ez-php/rate-limiter": "^2.0",
+                "ez-php/sms": "^2.0",
                 "ez-php/webhook": "^2.0",
                 "friendsofphp/php-cs-fixer": "^3.94",
                 "phpstan/phpstan": "^2.1",
@@ -2952,6 +2953,7 @@
             },
             "suggest": {
                 "ez-php/rate-limiter": "Needed for RateLimitedChannel",
+                "ez-php/sms": "Needed for SmsChannel (SMS delivery via Twilio/Vonage)",
                 "ez-php/webhook": "Needed for WebhookChannel (signed, queued, retried HTTP delivery)"
             },
             "type": "library",
@@ -2986,7 +2988,7 @@
                 "issues": "https://github.com/ez-php/notification/issues",
                 "source": "https://github.com/ez-php/notification"
             },
-            "time": "2026-10-20T21:07:24+00:00"
+            "time": "2026-10-23T12:36:12+00:00"
         },
         {
             "name": "ez-php/push",
