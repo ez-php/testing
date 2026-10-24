@@ -19,9 +19,9 @@
   "require": {
     "php": "^8.5",
     "phpunit/phpunit": "^13.0",
-    "ez-php/contracts": "^2.0",
-    "ez-php/http": "^2.0",
-    "ez-php/orm": "^2.0"
+    "ez-php/contracts": "^2.6.0",
+    "ez-php/http": "^2.6.0",
+    "ez-php/orm": "^2.6.0"
   },
   "suggest": {
     "ez-php/mail": "Needed for Fake\\FakeMailer",
@@ -30,11 +30,11 @@
     "ez-php/storage": "Needed for Fake\\FakeStorage"
   },
   "require-dev": {
-    "ez-php/docker": "^2.0",
-    "ez-php/mail": "^2.0",
-    "ez-php/notification": "^2.0",
-    "ez-php/events": "^2.0",
-    "ez-php/storage": "^2.0",
+    "ez-php/docker": "^2.6.0",
+    "ez-php/mail": "^2.6.0",
+    "ez-php/notification": "^2.6.0",
+    "ez-php/events": "^2.6.0",
+    "ez-php/storage": "^2.6.0",
     "phpstan/phpstan": "^2.1",
     "friendsofphp/php-cs-fixer": "^3.94",
     "phpstan/phpstan-strict-rules": "^2.0",
