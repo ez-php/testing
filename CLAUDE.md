@@ -151,7 +151,7 @@ php make_module.php <name> --description="..." --services=mysql,redis --extensio
 
 `<name>` is the kebab-case package name; the namespace is derived as
 `EzPhp\<PascalCase>` (each `-`-separated word upper-cased) unless `--namespace=`
-overrides it. Existing exceptions the guess gets wrong: `asyncapi` → `AsyncApi`,
+overrides it. Existing exceptions the guess gets wrong: `asyncapi` → `AsyncApi`, `asyncapi-ui` → `AsyncApiUi`,
 `bignum` → `BigNum`, `dataloader` → `DataLoader`, `dotenv` → `Env`, `graphql` → `GraphQL`, `graphql-subscriptions` → `GraphQLSubscriptions`, `oauth` → `OAuth`,
 `opcache` → `OPCache`, `openapi` → `OpenApi`, `qrcode` → `QrCode`, `swagger-ui` → `SwaggerUI`, `webauthn` → `WebAuthn` and
 `websocket` → `WebSocket`; `websocket-client` → `WebsocketClient`, `websocket-tls` → `WebsocketTls`,
@@ -345,8 +345,6 @@ Generic factory. `@template T of Entity`. Default attribute values may be scalar
 - **`EventDispatcher` is `final` and has no interface, so there is no `FakeEventBus`.** `EventSpy::attachTo($dispatcher)` registers a highest-priority wildcard listener instead: the real listeners still run, and the spy still sees an event a later listener stops. Anonymous-class events are not matched by wildcard listeners (a limitation of `EventDispatcher`), so use named event classes in tests.
 - **`FakeStorage` reuses `ez-php/storage`'s `InMemoryDriver`** (it is a thin decorator adding assertions) instead of reimplementing an in-memory store.
 - **Assertions use `PHPUnit\Framework\Assert`** and take an optional `Closure` filter, so failures show up as ordinary PHPUnit assertion failures with a message naming the missing/unexpected class.
-
----
 - **Shares the `EzPhp\Testing\` namespace with `ez-php/testing-application`** — the two packages are split by coupling (framework-independent vs. framework-coupled), not by namespace. Class names must therefore stay unique across both packages; the aggregated `check_test_classes.php` run does not cover `src/`, so check by hand when adding a class.
 
 ## Testing Approach
